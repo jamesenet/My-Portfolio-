@@ -1,3 +1,10 @@
+/*
+Covid 19 Exploration
+
+Skills used: Joins, CTE's, Temp Tables, Window Functions, Aggregate Functions, Creating Views
+
+*/
+
 Select *
 From [Portfolio Project].[dbo].[CovidDeaths]
 where continent is not null
@@ -149,4 +156,5 @@ where dea.continent is not null
 --Order by 2,3
 
 Select *
+
 From PercentPopulationVaccinated
