@@ -1,152 +1,181 @@
-Select *
+/*
+
+Queries used for Tableau Project
+
+*/
+
+
+
+-- 1. 
+
+Select SUM(new_cases) as total_cases, SUM(cast(new_deaths as int)) as total_deaths, SUM(cast(new_deaths as int))/SUM(New_Cases)*100 as DeathPercentage
 From [Portfolio Project].[dbo].[CovidDeaths]
-where continent is not null
-order by 3,4
+--Where location like '%nigeria%'
+where continent is not null 
+--Group By date
+order by 1,2
 
---Select *
---From CovidVaccinations
---order by 3,4
+-- Just a double check based off the data provided
+-- numbers are extremely close so we will keep them - The Second includes "International"  Location
 
-Select location, date, total_cases, new_cases, total_deaths, population
+
+--Select SUM(new_cases) as total_cases, SUM(cast(new_deaths as int)) as total_deaths, SUM(cast(new_deaths as int))/SUM(New_Cases)*100 as DeathPercentage
+--From [Portfolio Project].[dbo].[CovidDeaths]
+----Where location like '%nigeria%'
+--where location = 'World'
+----Group By date
+--order by 1,2
+
+
+-- 2. 
+
+-- We take these out as they are not inluded in the above queries and want to stay consistent
+-- European Union is part of Europe
+
+Select location, SUM(cast(new_deaths as int)) as TotalDeathCount
 From [Portfolio Project].[dbo].[CovidDeaths]
-order by 1,2
-
-
---Looking at Total_cases vs Total_deaths
---show likelihood of dying if you have covid
-
-Select location, date, total_cases, total_deaths, (total_deaths/total_cases)*100 as DeathPercentage
-From [Portfolio Project].[dbo].[CovidDeaths] 
-where location like '%Nigeria%'
-order by 1,2
-
-
---Looking at Total_cases vs Population
---shows population percentage with covid
-
-Select location, date, population, total_cases, (total_cases/population)*100 as Infected_Population_Percentage
-From [Portfolio Project].[dbo].[CovidDeaths] 
---where location like '%Nigeria%'
-order by 1,2
-
-
---Highest Infection Rate Compared to Population per Country
-
-Select location, population, MAX(total_cases)as HighestInfectionCount , MAX((total_cases/population))*100 as Infected_Population_Percentage
-From [Portfolio Project].[dbo].[CovidDeaths] 
---where location like '%Nigeria%'
-Group by location, population
-order by Infected_Population_Percentage DESC
-
-
---Showing the countries with the highest death rate per population
-
-Select location, MAX(cast(total_deaths as int))as TotalDeathCount 
-From [Portfolio Project].[dbo].[CovidDeaths] 
---where location like '%Nigeria%'
-where continent is not null
+--Where location like '%nigeria%'
+Where continent is null 
+and location not in ('World', 'European Union', 'International')
 Group by location
-order by TotalDeathCount  DESC
+order by TotalDeathCount desc
 
 
---Showing the continent with the highest death rate per population
+-- 3.
 
-Select continent, SUM(CONVERT(int,new_deaths))as TotalDeathCount 
-From [Portfolio Project].[dbo].[CovidDeaths] 
-where continent!=''
-Group by continent
-order by TotalDeathCount  DESC
-
-
-Select SUM(new_cases) as Total_cases, SUM(CAST(new_deaths as int)) as Total_deaths, (SUM(new_cases)/ SUM(CAST(new_deaths as int)))*100 as DeathPercentage
-From [Portfolio Project].[dbo].[CovidDeaths] 
---where location like '%Nigeria%'
-where continent is not null
-order by 1,2
+Select Location, Population, MAX(total_cases) as HighestInfectionCount,  Max((total_cases/population))*100 as PercentPopulationInfected
+From [Portfolio Project].[dbo].[CovidDeaths]
+--Where location like '%nigeria%'
+Group by Location, Population
+order by PercentPopulationInfected desc
 
 
---Looking at Total Population vs Vaccination
+-- 4.
 
-Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.location Order by dea.location, dea.date) as Rolling_Vaccine_Count
+
+Select Location, Population,date, MAX(total_cases) as HighestInfectionCount,  Max((total_cases/population))*100 as PercentPopulationInfected
+From [Portfolio Project].[dbo].[CovidDeaths]
+--Where location like '%nigeria%'
+Group by Location, Population, date
+order by PercentPopulationInfected desc
+
+
+
+
+
+
+
+
+
+
+
+
+-- Queries I originally had, but excluded some because it created too long of video
+-- Here only in case you want to check them out
+
+
+-- 1.
+
+Select dea.continent, dea.location, dea.date, dea.population
+, MAX(vac.total_vaccinations) as RollingPeopleVaccinated
+--, (RollingPeopleVaccinated/population)*100
 From [Portfolio Project].[dbo].[CovidDeaths] dea
-JOIN [Portfolio Project].[dbo].[CovidVaccinations] vac
+Join [Portfolio Project].[dbo].[CovidVaccinations] vac
 	On dea.location = vac.location
 	and dea.date = vac.date
-where dea.continent is not null
-Order by 2,3
+where dea.continent is not null 
+group by dea.continent, dea.location, dea.date, dea.population
+order by 1,2,3
 
 
 
 
---Using CTE
+-- 2.
+Select SUM(new_cases) as total_cases, SUM(cast(new_deaths as int)) as total_deaths, SUM(cast(new_deaths as int))/SUM(New_Cases)*100 as DeathPercentage
+From [Portfolio Project].[dbo].[CovidDeaths]
+--Where location like '%nigeria%'
+where continent is not null 
+--Group By date
+order by 1,2
 
-With PopVsVac(Continent, Location, Date,  Population, New_Vaccinations, Rolling_Vaccine_Count)
+
+-- Just a double check based off the data provided
+-- numbers are extremely close so we will keep them - The Second includes "International"  Location
+
+
+--Select SUM(new_cases) as total_cases, SUM(cast(new_deaths as int)) as total_deaths, SUM(cast(new_deaths as int))/SUM(New_Cases)*100 as DeathPercentage
+--From PortfolioProject..CovidDeaths
+----Where location like '%nigeria%'
+--where location = 'World'
+----Group By date
+--order by 1,2
+
+
+-- 3.
+
+-- We take these out as they are not inluded in the above queries and want to stay consistent
+-- European Union is part of Europe
+
+Select location, SUM(cast(new_deaths as int)) as TotalDeathCount
+From [Portfolio Project].[dbo].[CovidDeaths]
+--Where location like '%nigeria%'
+Where continent is null 
+and location not in ('World', 'European Union', 'International')
+Group by location
+order by TotalDeathCount desc
+
+
+
+-- 4.
+
+Select Location, Population, MAX(total_cases) as HighestInfectionCount,  Max((total_cases/population))*100 as PercentPopulationInfected
+From [Portfolio Project].[dbo].[CovidDeaths]
+--Where location like '%nigeria%'
+Group by Location, Population
+order by PercentPopulationInfected desc
+
+
+
+-- 5.
+
+--Select Location, date, total_cases,total_deaths, (total_deaths/total_cases)*100 as DeathPercentage
+--From [Portfolio Project].[dbo].[CovidDeaths]
+----Where location like '%states%'
+--where continent is not null 
+--order by 1,2
+
+-- took the above query and added population
+Select Location, date, population, total_cases, total_deaths
+From [Portfolio Project].[dbo].[CovidDeaths]
+--Where location like '%nigeria%'
+where continent is not null 
+order by 1,2
+
+
+-- 6. 
+
+
+With PopvsVac (Continent, Location, Date, Population, New_Vaccinations, RollingPeopleVaccinated)
 as
 (
-	Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-	SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.location Order by dea.location, dea.date) as Rolling_Vaccine_Count
-	From [Portfolio Project].[dbo].[CovidDeaths] dea
-	JOIN [Portfolio Project].[dbo].[CovidVaccinations] vac
+Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
+--, (RollingPeopleVaccinated/population)*100
+From [Portfolio Project].[dbo].[CovidDeaths] dea
+Join [Portfolio Project].[dbo].[CovidVaccinations] vac
 	On dea.location = vac.location
 	and dea.date = vac.date
-	where dea.continent is not null
-	--Order by 2,3
+where dea.continent is not null 
+--order by 2,3
 )
-Select *,(Rolling_Vaccine_Count/Population)*100
-From PopVsVac
+Select *, (RollingPeopleVaccinated/Population)*100 as PercentPeopleVaccinated
+From PopvsVac
 
 
---TEMP Table
+-- 7. 
 
-DROP Table If exist #PercentPopulationVaccinated
-Create Table #PercentPopulationVaccinated
-(
-Continent nvarchar(255),
-Location nvarchar(255),
-Date datetime,
-Population numeric,
-New_vaccinations numeric,
-Rolling_Vaccine_Count numeric
-)
-
-
-Insert into #PercentPopulationVaccinated
-Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.location Order by dea.location, dea.date) as Rolling_Vaccine_Count
-From [Portfolio Project].[dbo].[CovidDeaths] dea
-JOIN [Portfolio Project].[dbo].[CovidVaccinations] vac
-	On dea.location = vac.location
-	and dea.date = vac.date
-where dea.continent is not null
---Order by 2,3
-
-Select *,(Rolling_Vaccine_Count/Population)*100
-From #PercentPopulationVaccinated
-
-
-
-
-CREATE VIEW PercentPopulationVaccinated as
-Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.location Order by dea.location, dea.date) as Rolling_Vaccine_Count
-From [Portfolio Project].[dbo].[CovidDeaths] dea
-JOIN [Portfolio Project].[dbo].[CovidVaccinations] vac
-	On dea.location = vac.location
-	and dea.date = vac.date
-where dea.continent is not null
---Order by 2,3
-
-
-Create View PPV as
-Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.location Order by dea.location, dea.date) as Rolling_Vaccine_Count
-From [Portfolio Project].[dbo].[CovidDeaths] dea
-JOIN [Portfolio Project].[dbo].[CovidVaccinations] vac
-	On dea.location = vac.location
-	and dea.date = vac.date
-where dea.continent is not null
---Order by 2,3
-
-Select *
-From PercentPopulationVaccinated
+Select Location, Population,date, MAX(total_cases) as HighestInfectionCount,  Max((total_cases/population))*100 as PercentPopulationInfected
+From [Portfolio Project].[dbo].[CovidDeaths]
+--Where location like '%nigeria%'
+Group by Location, Population, date
+order by PercentPopulationInfected desc
